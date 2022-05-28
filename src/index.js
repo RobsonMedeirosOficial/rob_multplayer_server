@@ -34,11 +34,11 @@ let room ={
 room1=room;
 
 room1.name="sala1";
-room1.maxPlayer=2;
+room1.maxPlayer=5;
 
 function RegisterPlayer(json={}, socketId, socket){
   console.log("Registrando player...");
-  if (listPlayerInfo.length>=2) {
+  if (listPlayerInfo.length>=5) {
     console.log("Room is full");
     console.log("Room: "+ listPlayerInfo.length + "/"+room1.maxPlayer);
     console.log("Player: "+ json.name + " se FU...");
@@ -62,7 +62,14 @@ function RegisterPlayer(json={}, socketId, socket){
       json.socketId = socketId;
       json.health = playerInfo.health;
       listPlayerInfo.push(json);
-      socket.emit("player-connect", json)
+
+      socket.emit("player-connect", json);
+      socket.broadcast.emit("player-connect", json);
+      for (let i = 0; i < listPlayerInfo.length; i++) {
+        if(listPlayerInfo[i]!=null && listPlayerInfo[i].socketId!=socket.id){
+          socket.emit("player-connect", listPlayerInfo[i]);
+        } 
+      }
       console.log("Player "+json.name+" entrou na sala ("+ listPlayerInfo.length + "/"+room1.maxPlayer+")");
       //console.log("PlayerInfo: "+ JSON.stringify(json));
       
@@ -134,6 +141,7 @@ io.on('connection', (socket) => {
       console.log('[' + (new Date()).toUTCString() + '] ' + socket.id + ' disconnected: ' + reason);
       RemovePlayer(socket);
       socket.broadcast.emit("player-disconnect", socket.id);
+      console.log("Total player in room: "+listPlayerInfo.length+" / "+room1.maxPlayer);
     });
 
 });
