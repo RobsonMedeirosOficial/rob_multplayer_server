@@ -36,6 +36,7 @@ room1=room;
 room1.name="sala1";
 room1.maxPlayer=5;
 
+
 function RegisterPlayer(json={}, socketId, socket){
   console.log("Registrando player...");
   if (listPlayerInfo.length>=5) {
@@ -96,13 +97,24 @@ function RemovePlayer(socket){
   }
 
   if(index!=-1){
-    listPlayerInfo.splice(index);
+    listPlayerInfo.splice(index,1);
     console.log("Player: "+json.name+" saiu da sala.");
   }
 
 }
 
+function ObserverPlayer(socket, playerInfo){
 
+  for (let i = 0; i < listPlayerInfo.length; i++) {
+    if (listPlayerInfo[i] && listPlayerInfo[i].socketId==socket.id) {
+       listPlayerInfo[i]=playerInfo;
+      socket.broadcast.emit("update-pos-rot", playerInfo);
+      //socket.emit("update-pos-rot", playerInfo);
+      //console.log("Player: "+a.name+" update pos and rot: "+a.pos.x+" | "+a.rot.x);
+      console.log(JSON.stringify(playerInfo));
+    }
+  }
+}
 // App Code starts here
 console.log('Server is running!');
 
@@ -122,7 +134,10 @@ io.on('connection', (socket) => {
     socket.on('B', (data) => {
       console.log(data);
     });
-    
+
+    socket.on('update-pos-rot', (data) => {
+      ObserverPlayer(socket, data);
+    });
   
     socket.on('JOIN_ROOM', (data) => {
       //console.log(data);
@@ -131,11 +146,6 @@ io.on('connection', (socket) => {
       // console.log("PlayerInfo: "+ JSON.stringify(playerInfo));
       // console.log("Socket: "+ JSON.stringify(data));
     });
-
-
-
-
-
 
     socket.on('disconnect', (reason) => {
       console.log('[' + (new Date()).toUTCString() + '] ' + socket.id + ' disconnected: ' + reason);
