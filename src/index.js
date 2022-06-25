@@ -36,6 +36,7 @@ room1=room;
 room1.name="sala1";
 room1.maxPlayer=5;
 
+//FUNCTIONS ---------------------------------------------------------------
 
 function RegisterPlayer(json={}, socketId, socket){
   console.log("Registrando player...");
@@ -115,6 +116,53 @@ function ObserverPlayer(socket, playerInfo){
     }
   }
 }
+
+function Unpacker(socket,data={}){
+
+  switch (data.type) {
+    case "transform":
+      socket.broadcast.emit(data.type,data);
+      break;
+  
+    default:
+      break;
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// SERVER ACTIONS ---------------------------------------------------------
+
 // App Code starts here
 console.log('Server is running!');
 
@@ -137,6 +185,9 @@ io.on('connection', (socket) => {
 
     socket.on('update-pos-rot', (data) => {
       ObserverPlayer(socket, data);
+    });
+    socket.on('action', (data) => {
+      Unpacker(socket,data);
     });
   
     socket.on('JOIN_ROOM', (data) => {
